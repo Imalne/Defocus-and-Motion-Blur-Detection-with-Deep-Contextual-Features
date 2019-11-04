@@ -1,0 +1,15 @@
+Configs = {
+    "train_image_dir": "",
+    "train_mask_dir": "",
+    "test_image_dir": "",
+    "test_mask_dir": "",
+    "encoder_learning_rate": 0.0001,
+    "decoder_lr_scale": 10,
+    "train_batch_size": 10,
+    "test_batch_size": 1,
+    "epoch": 1000,
+    "model_save_path": "",
+    "vgg_19_pre_path": "",
+    'checkpoint_dir': "",
+    "cross_entropy_weights": []
+}
