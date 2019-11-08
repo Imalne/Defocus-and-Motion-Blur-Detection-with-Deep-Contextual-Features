@@ -151,7 +151,7 @@ if __name__ == '__main__':
     test_loader = DataLoader(train_data, batch_size=Configs['test_batch_size'], shuffle=True)
 
     write = SummaryWriter()
-    write.add_graph(model,torch.rand(1,3,224,224).cuda())
+    # write.add_graph(model,torch.rand(1,3,224,224).cuda())
     loss_func = MultiCrossEntropyLoss().cuda()
     for epoch in range(cur_epoch, Configs['epoch']):
         train(model, train_loader, test_loader, loss_func, optimizer, epoch, Configs['model_save_path'], write)
