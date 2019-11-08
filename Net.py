@@ -1,5 +1,6 @@
 import torch
 from cfg import Configs
+import os
 
 
 class Net(torch.nn.Module):
@@ -109,6 +110,32 @@ class Net(torch.nn.Module):
         out_1 = self.out_layer_1(x)
 
         return out_1, out_2, out_3, out_4
+
+    def load_model(self, prep_path, save_path):
+        if os.path.exists(save_path):
+            print("load from saved model:" + save_path + '...')
+            checkpoint = torch.load(save_path)
+            self.load_state_dict(checkpoint['model_state_dict'])
+            ech = checkpoint['epoch']
+            self.eval()
+            print("load complete")
+            return ech
+        else:
+            print("load pre-parameters:" + prep_path + '...')
+            prep = torch.load(prep_path)
+            model_dict = self.state_dict()
+            prep = parameter_rename(prep, model_dict, range(32))
+            pre_trained_dict = {k: v for k, v in prep.items() if k in model_dict}
+            model_dict.update(pre_trained_dict)
+            self.load_state_dict(model_dict)
+            print("load complete")
+            return 0
+
+    def save_model(self, ech, save_path):
+        torch.save({
+            'epoch': ech,
+            'model_state_dict': self.state_dict(),
+        }, save_path)
 
 
 class MultiCrossEntropyLoss(torch.nn.Module):

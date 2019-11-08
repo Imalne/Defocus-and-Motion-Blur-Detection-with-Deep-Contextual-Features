@@ -88,35 +88,7 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, save_path, s
                 valid_loss
             ))
 
-            save_model(net, ech, save_path)
-
-
-def load_model(net, prep_path, save_path):
-    if os.path.exists(save_path):
-        print("load from saved model:" + save_path + '...')
-        checkpoint = torch.load(save_path)
-        net.load_state_dict(checkpoint['model_state_dict'])
-        ech = checkpoint['epoch']
-        net.eval()
-        print("load complete")
-        return net, ech
-    else:
-        print("load pre-parameters:" + prep_path + '...')
-        prep = torch.load(prep_path)
-        model_dict = net.state_dict()
-        prep = parameter_rename(prep, model_dict, range(32))
-        pre_trained_dict = {k: v for k, v in prep.items() if k in model_dict}
-        model_dict.update(pre_trained_dict)
-        net.load_state_dict(model_dict)
-        print("load complete")
-        return net, 0
-
-
-def save_model(net, ech, save_path):
-    torch.save({
-        'epoch': ech,
-        'model_state_dict': net.state_dict(),
-    }, save_path)
+            net.save_model(ech, save_path)
 
 
 def optimizer_by_layer(net, encoder_lr, decoder_lr_scale):
@@ -170,7 +142,7 @@ def optimizer_by_layer(net, encoder_lr, decoder_lr_scale):
 
 if __name__ == '__main__':
     model = Net().cuda()
-    model, cur_epoch = load_model(model, Configs['vgg_19_pre_path'], Configs['model_save_path'])
+    cur_epoch = model.load_model(Configs['vgg_19_pre_path'], Configs['model_save_path'])
     optimizer = optimizer_by_layer(model, Configs['encoder_learning_rate'], Configs['decoder_lr_scale'])
 
     train_data = BlurDataSet(Configs['train_image_dir'], Configs['train_mask_dir'])

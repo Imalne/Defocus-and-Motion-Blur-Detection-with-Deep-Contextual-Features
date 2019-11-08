@@ -60,20 +60,20 @@ class BlurDataSet(Dataset):
             target_images.append((tran(target_image) * 255).long().squeeze())
         targets.append(target_images)
 
-        # augs_inputs = []
-        # augs_targets = []
-        # for aug_trans in self.aug_transforms:
-        #     augs_inputs.append(aug_trans(origin_image))
-        #     aug_trans.transforms[0].rand_fix()
-        #     augs_targets.append(aug_trans(target_image))
-        #     aug_trans.transforms[0].rand_active()
-        #
-        # for i in range(len(augs_inputs)):
-        #     inputs.append(self.input_transform(augs_inputs[i]))
-        #     target_images = []
-        #     for tran in self.target_transforms:
-        #         target_images.append((tran(augs_targets[i]) * 255).long().squeeze())
-        #     targets.append(target_images)
+        augs_inputs = []
+        augs_targets = []
+        for aug_trans in self.aug_transforms:
+            augs_inputs.append(aug_trans(origin_image))
+            aug_trans.transforms[0].rand_fix()
+            augs_targets.append(aug_trans(target_image))
+            aug_trans.transforms[0].rand_active()
+
+        for i in range(len(augs_inputs)):
+            inputs.append(self.input_transform(augs_inputs[i]))
+            target_images = []
+            for tran in self.target_transforms:
+                target_images.append((tran(augs_targets[i]) * 255).long().squeeze())
+            targets.append(target_images)
 
         return inputs, targets
 
