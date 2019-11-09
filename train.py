@@ -148,7 +148,7 @@ if __name__ == '__main__':
     train_data = BlurDataSet(Configs['train_image_dir'], Configs['train_mask_dir'])
     train_loader = DataLoader(train_data, batch_size=Configs['train_batch_size'], shuffle=True)
     test_data = BlurDataSet(Configs['test_image_dir'], Configs['test_mask_dir'])
-    test_loader = DataLoader(train_data, batch_size=Configs['test_batch_size'], shuffle=True)
+    test_loader = DataLoader(test_data, batch_size=Configs['test_batch_size'], shuffle=True)
 
     write = SummaryWriter()
     # write.add_graph(model,torch.rand(1,3,224,224).cuda())
