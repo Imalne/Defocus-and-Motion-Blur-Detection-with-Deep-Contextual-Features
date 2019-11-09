@@ -20,14 +20,14 @@ def valid(net, loader, loss_function, ech, summary):
     pre_mask3 = None
     pre_mask4 = None
     for batch_id, data in enumerate(loader):
-        input_image = torch.cat(data[0], 0).cuda()
+        input_image = torch.cat(data[0], 0).cuda(device=Configs["device_ids"][0])
         image = data[0][0][0]
         target = []
         for i in range(4):
             cur = []
             for t in data[1]:
                 cur.append(t[i])
-            target.append(torch.cat(cur, 0).cuda())
+            target.append(torch.cat(cur, 0).cuda(device=Configs["device_ids"][0]))
 
         gt1 = data[1][0][0][0]
         gt2 = data[1][0][1][0]
@@ -60,13 +60,13 @@ def valid(net, loader, loss_function, ech, summary):
 def train(net, train_loader, valid_loader, loss_function, opt, ech, save_path, summary):
     net.train()
     for batch_id, data in enumerate(train_loader):
-        input_image = torch.cat(data[0], 0).cuda()
+        input_image = torch.cat(data[0], 0).cuda(device=Configs["device_ids"][0])
         target = []
         for i in range(4):
             cur = []
             for t in data[1]:
                 cur.append(t[i])
-            target.append(torch.cat(cur, 0).cuda())
+            target.append(torch.cat(cur, 0).cuda(device=Configs["device_ids"][0]))
 
         opt.zero_grad()
         output = net(input_image)
@@ -88,7 +88,7 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, save_path, s
                 valid_loss
             ))
 
-            net.save_model(ech, save_path)
+            net.module.save_model(ech, save_path)
 
 
 def optimizer_by_layer(net, encoder_lr, decoder_lr_scale):
@@ -141,18 +141,22 @@ def optimizer_by_layer(net, encoder_lr, decoder_lr_scale):
 
 
 if __name__ == '__main__':
-    model = Net().cuda()
-    cur_epoch = model.load_model(Configs['vgg_19_pre_path'], Configs['model_save_path'])
-    optimizer = optimizer_by_layer(model, Configs['encoder_learning_rate'], Configs['decoder_lr_scale'])
+    model = Net()
+
+    model = torch.nn.DataParallel(model, device_ids=Configs["device_ids"])
+    model = model.cuda(device=Configs["device_ids"][0])
+    cur_epoch = model.module.load_model(Configs['vgg_19_pre_path'], Configs['model_save_path'])
+    optimizer = optimizer_by_layer(model.module, Configs['encoder_learning_rate'], Configs['decoder_lr_scale'])
+
 
     train_data = BlurDataSet(Configs['train_image_dir'], Configs['train_mask_dir'])
-    train_loader = DataLoader(train_data, batch_size=Configs['train_batch_size'], shuffle=True)
+    train_loader = DataLoader(train_data, batch_size=Configs['train_batch_size'] * len(Configs['device_ids']), shuffle=True,num_workers= len(Configs['device_ids']))
     test_data = BlurDataSet(Configs['test_image_dir'], Configs['test_mask_dir'])
-    test_loader = DataLoader(test_data, batch_size=Configs['test_batch_size'], shuffle=True)
+    test_loader = DataLoader(test_data, batch_size=Configs['test_batch_size'] * len(Configs['device_ids']), shuffle=True, num_workers= len(Configs['device_ids']))
 
     write = SummaryWriter()
     # write.add_graph(model,torch.rand(1,3,224,224).cuda())
-    loss_func = MultiCrossEntropyLoss().cuda()
+    loss_func = MultiCrossEntropyLoss()
     for epoch in range(cur_epoch, Configs['epoch']):
         train(model, train_loader, test_loader, loss_func, optimizer, epoch, Configs['model_save_path'], write)
     write.close()

@@ -11,5 +11,6 @@ Configs = {
     "model_save_path": "",
     "vgg_19_pre_path": "",
     'checkpoint_dir': "",
-    "cross_entropy_weights": []
+    "cross_entropy_weights": [],
+    "device_ids": [0]
 }
