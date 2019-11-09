@@ -5,6 +5,8 @@ cfg.py
 # model files
 *.pth
 
+runs/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
