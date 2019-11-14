@@ -57,7 +57,7 @@ def valid(net, loader, loss_function, ech, summary):
     return valid_loss
 
 
-def train(net, train_loader, valid_loader, loss_function, opt, ech, save_path, summary):
+def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
     net.train()
     for batch_id, data in enumerate(train_loader):
         input_image = torch.cat(data[0], 0).cuda(device=Configs["device_ids"][0])
@@ -88,8 +88,6 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, save_path, s
                 total_loss.data.cpu().numpy(),
                 valid_loss
             ))
-
-            net.module.save_model(ech, save_path)
 
 
 def optimizer_by_layer(net, encoder_lr, decoder_lr_scale):
@@ -159,6 +157,7 @@ if __name__ == '__main__':
     # write.add_graph(model,torch.rand(1,3,224,224).cuda())
     loss_func = MultiCrossEntropyLoss()
     for epoch in range(cur_epoch, Configs['epoch']):
-        train(model, train_loader, test_loader, loss_func, optimizer, epoch, Configs['model_save_path'], write)
+        train(model, train_loader, test_loader, loss_func, optimizer, epoch, write)
+        model.module.save_model(epoch, Configs['model_save_path'])
     write.close()
     exit(0)
