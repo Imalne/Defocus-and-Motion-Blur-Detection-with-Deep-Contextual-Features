@@ -6,12 +6,14 @@ from PIL import Image
 import numpy as np
 import cv2
 import torch
+from cfg import Configs
 
 
 class BlurDataSet(Dataset):
-    def __init__(self, data_dir, target_dir):
+    def __init__(self, data_dir, target_dir, aug):
         self.data_dir = data_dir
         self.target_dir = target_dir
+        self.aug = aug
 
         if not os.path.exists(data_dir):
             raise RuntimeError("dataset error:", self.target_dir + 'not exists')
@@ -39,10 +41,14 @@ class BlurDataSet(Dataset):
         self.aug_transforms.append(transforms.Compose([SyncRandomCrop((256,256)), transforms.RandomHorizontalFlip(1), transforms.RandomRotation((180,180))]))
         self.aug_transforms.append(transforms.Compose([SyncRandomCrop((256,256)), transforms.RandomHorizontalFlip(1), transforms.RandomRotation((270,270))]))
 
-        self.input_transform = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])
+        self.input_transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor()])
         
         self.target_transforms = []
-        self.target_transforms.append(transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()]))
+        self.target_transforms.append(transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor()]))
         self.target_transforms.append(transforms.Compose([transforms.Resize((112, 112)), transforms.ToTensor()]))
         self.target_transforms.append(transforms.Compose([transforms.Resize((56, 56)), transforms.ToTensor()]))
         self.target_transforms.append(transforms.Compose([transforms.Resize((28, 28)), transforms.ToTensor()]))
@@ -60,20 +66,21 @@ class BlurDataSet(Dataset):
             target_images.append((tran(target_image) * 255).long().squeeze())
         targets.append(target_images)
 
-        augs_inputs = []
-        augs_targets = []
-        for aug_trans in self.aug_transforms:
-            augs_inputs.append(aug_trans(origin_image))
-            aug_trans.transforms[0].rand_fix()
-            augs_targets.append(aug_trans(target_image))
-            aug_trans.transforms[0].rand_active()
+        if self.aug:
+            augs_inputs = []
+            augs_targets = []
+            for aug_trans in self.aug_transforms:
+                augs_inputs.append(aug_trans(origin_image))
+                aug_trans.transforms[0].rand_fix()
+                augs_targets.append(aug_trans(target_image))
+                aug_trans.transforms[0].rand_active()
 
-        for i in range(len(augs_inputs)):
-            inputs.append(self.input_transform(augs_inputs[i]))
-            target_images = []
-            for tran in self.target_transforms:
-                target_images.append((tran(augs_targets[i]) * 255).long().squeeze())
-            targets.append(target_images)
+            for i in range(len(augs_inputs)):
+                inputs.append(self.input_transform(augs_inputs[i]))
+                target_images = []
+                for tran in self.target_transforms:
+                    target_images.append((tran(augs_targets[i]) * 255).long().squeeze())
+                targets.append(target_images)
 
         return inputs, targets
 

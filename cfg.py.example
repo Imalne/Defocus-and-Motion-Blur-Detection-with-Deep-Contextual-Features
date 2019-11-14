@@ -12,5 +12,6 @@ Configs = {
     "vgg_19_pre_path": "",
     'checkpoint_dir': "",
     "cross_entropy_weights": [],
-    "device_ids": [0]
+    "device_ids": [0],
+    "augmentation": True,
 }

@@ -150,9 +150,9 @@ if __name__ == '__main__':
     optimizer = optimizer_by_layer(model.module, Configs['encoder_learning_rate'], Configs['decoder_lr_scale'])
 
 
-    train_data = BlurDataSet(Configs['train_image_dir'], Configs['train_mask_dir'])
+    train_data = BlurDataSet(Configs['train_image_dir'], Configs['train_mask_dir'],aug=Configs['augmentation'])
     train_loader = DataLoader(train_data, batch_size=Configs['train_batch_size'] * len(Configs['device_ids']), shuffle=True,num_workers= len(Configs['device_ids']))
-    test_data = BlurDataSet(Configs['test_image_dir'], Configs['test_mask_dir'])
+    test_data = BlurDataSet(Configs['test_image_dir'], Configs['test_mask_dir'],False)
     test_loader = DataLoader(test_data, batch_size=Configs['test_batch_size'] * len(Configs['device_ids']), shuffle=True, num_workers= len(Configs['device_ids']))
 
     write = SummaryWriter()
