@@ -1,5 +1,6 @@
 from DataSetLoader.MDataSet import BlurDataSet
-from Net import Net, MultiCrossEntropyLoss, parameter_rename
+from Net import Net, parameter_rename
+from loss import HybridLoss
 from torch.utils.data import DataLoader
 from torch import optim
 import torch
@@ -147,7 +148,6 @@ if __name__ == '__main__':
     cur_epoch = model.module.load_model(Configs['vgg_19_pre_path'], Configs['model_save_path'])
     optimizer = optimizer_by_layer(model.module, Configs['encoder_learning_rate'], Configs['decoder_lr_scale'])
 
-
     train_data = BlurDataSet(Configs['train_image_dir'], Configs['train_mask_dir'],aug=Configs['augmentation'])
     train_loader = DataLoader(train_data, batch_size=Configs['train_batch_size'] * len(Configs['device_ids']), shuffle=True,num_workers= len(Configs['device_ids']))
     test_data = BlurDataSet(Configs['test_image_dir'], Configs['test_mask_dir'],False)
@@ -155,7 +155,7 @@ if __name__ == '__main__':
 
     write = SummaryWriter()
     # write.add_graph(model,torch.rand(1,3,224,224).cuda())
-    loss_func = MultiCrossEntropyLoss()
+    loss_func = HybridLoss(Configs["l_bce"], Configs["l_ssim"])
     for epoch in range(cur_epoch, Configs['epoch']):
         train(model, train_loader, test_loader, loss_func, optimizer, epoch, write)
         model.module.save_model(epoch, Configs['model_save_path'])

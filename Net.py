@@ -1,6 +1,8 @@
 import torch
 from cfg import Configs
 import os
+import torch.nn.functional as F
+from math import exp
 
 
 class Net(torch.nn.Module):
@@ -136,22 +138,6 @@ class Net(torch.nn.Module):
             'epoch': ech,
             'model_state_dict': self.state_dict(),
         }, save_path)
-
-
-class MultiCrossEntropyLoss(torch.nn.Module):
-    def __init__(self):
-        super(MultiCrossEntropyLoss, self).__init__()
-
-    def forward(self, output, target):
-        loss_0 = torch.nn.functional.cross_entropy(output[0], target[0], weight=torch.FloatTensor(Configs["cross_entropy_weights"]).cuda())/64
-        loss_1 = torch.nn.functional.cross_entropy(output[1], target[1], weight=torch.FloatTensor(Configs["cross_entropy_weights"]).cuda())/16
-        loss_2 = torch.nn.functional.cross_entropy(output[2], target[2], weight=torch.FloatTensor(Configs["cross_entropy_weights"]).cuda())/4
-        loss_3 = torch.nn.functional.cross_entropy(output[3], target[3], weight=torch.FloatTensor(Configs["cross_entropy_weights"]).cuda())
-        total_loss = loss_0 + loss_1 + loss_2 + loss_3
-        return total_loss
-
-
-loss_func = MultiCrossEntropyLoss()
 
 
 def parameter_rename(org_dict, target_dict, replace_index):

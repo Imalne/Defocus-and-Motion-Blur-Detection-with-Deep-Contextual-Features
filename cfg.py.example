@@ -14,4 +14,7 @@ Configs = {
     "cross_entropy_weights": [],
     "device_ids": [0],
     "augmentation": True,
+    "l_bce":1,
+    "l_ssim":1,
+    "l_IoU":1,
 }
