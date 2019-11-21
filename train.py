@@ -81,7 +81,7 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
                                ech * len(train_loader.dataset) + batch_id * train_loader.batch_size, summary)
             summary.add_scalar("scalar/train_loss", total_loss, global_step=ech)
 
-            print('Train Epoch: {} [{}/{} ({:.0f}%)] \t train_loss: {:.6f} \t valid_loss: {:.6f}'.format(
+            print('Train Epoch: {} [{}/{} ({:.0f}%)] \t train_loss: {:.12f} \t valid_loss: {:.12f}'.format(
                 ech,
                 batch_id * train_loader.batch_size,
                 len(train_loader.dataset),
