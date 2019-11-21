@@ -10,7 +10,7 @@ import os
 
 if __name__ == '__main__':
     out_image_dir = "C:\\Users\\Whale\\Documents\\DataSets\\CUHK_aug\\train_aug_image"
-    out_gt_dir = "C:\\Users\\Whale\\Documents\\DataSets\\CUHK_aug\\train_aug_gt"
+    out_gt_dir = "C:\\Users\\Whale\\Documents\\DataSets\\CUHK_aug\\train_aug1_gt"
     test_dataset = BlurDataSet(data_dir=Configs["train_image_dir"], target_dir=Configs["train_mask_dir"],aug=Configs["augmentation"])
     loader = DataLoader(dataset=test_dataset, batch_size=1, shuffle=False)
     count = 0
