@@ -151,7 +151,10 @@ def optimizer_by_layer(net, encoder_lr, decoder_lr_scale):
 
 
 if __name__ == '__main__':
-    model = Net_Bn()
+    if Configs["bn"]:
+        model = Net_Bn()
+    else:
+        model = Net()
 
     model = torch.nn.DataParallel(model, device_ids=Configs["device_ids"])
     model = model.cuda(device=Configs["device_ids"][0])
