@@ -119,7 +119,7 @@ class HybridLoss(torch.nn.Module):
 
     def forward(self, output, target):
         ce_loss = self.ce(output, target)
-        ssim_loss = self.ssim(torch.argmax(output[0],dim=1).unsqueeze(1).float(), target[0].unsqueeze(1).float())
+        ssim_loss = torch.abs(1-self.ssim(torch.argmax(output[0],dim=1).unsqueeze(1).float(), target[0].unsqueeze(1).float()))
         return self.ce_w*ce_loss+self.ssim_w*ssim_loss, ce_loss, ssim_loss
 
 
