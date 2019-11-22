@@ -17,4 +17,5 @@ Configs = {
     "l_bce":1,
     "l_ssim":1,
     "l_IoU":1,
+    "bn":False,
 }
