@@ -14,7 +14,7 @@ def _iou(pred, target, size_average = True):
         IoU1 = Iand1/Ior1
 
         #IoU loss is (1-IoU1)
-        IoU = IoU + (1-IoU1)
+        IoU = IoU + torch.abs(1-IoU1)
 
     return IoU/b
 

@@ -23,17 +23,19 @@ class MultiCrossEntropyLoss(torch.nn.Module):
         return total_loss
 
 class HybridLoss(torch.nn.Module):
-    def __init__(self, ce_weight, ssim_weight):
+    def __init__(self, ce_weight, ssim_weight, iou_weight):
         super(HybridLoss, self).__init__()
         self.ce = MultiCrossEntropyLoss()
         self.ssim_loss = pytorch_ssim.SSIM(window_size=11, size_average=True)
-        # self.iou_loss = pytorch_iou.IOU(size_average=True)
+        self.iou_loss = pytorch_iou.IOU(size_average=True)
         self.ce_w = ce_weight
         self.ssim_w = ssim_weight
+        self.iou_w = iou_weight
 
     def forward(self, output, target):
         ce_loss = self.ce(output, target)
         ssim_loss = 1- self.ssim_loss((torch.argmax(output[0],dim=1)).unsqueeze(1).float(), target[0].unsqueeze(1).float())
-        return self.ce_w*ce_loss+self.ssim_w*ssim_loss, ce_loss, ssim_loss
+        iou_loss = self.iou_loss((torch.argmax(output[0],dim=1)).unsqueeze(1).float(), target[0].unsqueeze(1).float())
+        return self.ce_w*ce_loss + self.ssim_w*ssim_loss + self.iou_w*iou_loss, ce_loss, ssim_loss, iou_loss
 
 

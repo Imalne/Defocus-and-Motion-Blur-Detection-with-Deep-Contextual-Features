@@ -44,11 +44,12 @@ def valid(net, loader, loss_function, ech, summary):
         pre_mask3 = torch.argmax(pre_mask3, dim=0).unsqueeze(0)
         pre_mask4 = output[3].cpu()[0]
         pre_mask4 = torch.argmax(pre_mask4, dim=0).unsqueeze(0)
-        valid_loss, ce_loss, ssim_loss = loss_function(output, target)
+        valid_loss, ce_loss, ssim_loss, iou_loss = loss_function(output, target)
         break
     summary.add_scalar("validate/total_loss", valid_loss.cpu().detach().numpy(), global_step=ech)
     summary.add_scalar("validate/ce_loss", ce_loss.cpu().detach().numpy(), global_step=ech)
     summary.add_scalar("validate/ssim_loss", ssim_loss.cpu().detach().numpy(), global_step=ech)
+    summary.add_scalar("validate/iou_loss", iou_loss.cpu().detach().numpy(), global_step=ech)
     summary.add_image("scalar/validate_sample_image", image, global_step=ech)
     summary.add_image("gt/validate_sample_gt1", gt1.unsqueeze(0), global_step=ech)
     summary.add_image("gt/validate_sample_gt2", gt2.unsqueeze(0), global_step=ech)
@@ -74,7 +75,7 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
 
         opt.zero_grad()
         output = net(input_image)
-        total_loss, ce_loss, ssim_loss = loss_function(output, target)
+        total_loss, ce_loss, ssim_loss, iou_loss = loss_function(output, target)
         total_loss.backward()
         opt.step()
 
@@ -85,11 +86,13 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
             summary.add_scalar("train/total_loss", total_loss, global_step=ech)
             summary.add_scalar("train/ce_loss", ce_loss, global_step=ech)
             summary.add_scalar("train/ssim_loss", ssim_loss, global_step=ech)
+            summary.add_scalar("train/iou_loss", iou_loss, global_step=ech)
 
             print('Train Epoch: {} [{}/{} ({:.0f}%)] '
                   '\t train_loss: {:.12f} '
                   '\t ce_loss: {:.12f} '
                   '\t ssim_loss: {:.12f} '
+                  '\t iou_loss: {:.12f} '
                   '\t valid_loss: {:.12f}'.format(
                 ech,
                 batch_id * train_loader.batch_size,
@@ -98,6 +101,7 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
                 total_loss.data.cpu().numpy(),
                 ce_loss.data.cpu().numpy(),
                 ssim_loss.data.cpu().numpy(),
+                iou_loss.data.cpu().numpy(),
                 valid_loss
             ))
 
@@ -131,7 +135,7 @@ if __name__ == '__main__':
 
     write = SummaryWriter()
     # write.add_graph(model,torch.rand(1,3,224,224).cuda())
-    loss_func = HybridLoss(Configs["l_bce"], Configs["l_ssim"])
+    loss_func = HybridLoss(Configs["l_bce"], Configs["l_ssim"], Configs["l_IoU"])
     for epoch in range(cur_epoch, Configs['epoch']):
         train(model, train_loader, test_loader, loss_func, optimizer, epoch, write)
         model.module.save_model(epoch, Configs['model_save_path'])
