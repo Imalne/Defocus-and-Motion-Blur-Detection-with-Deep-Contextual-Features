@@ -1,5 +1,6 @@
 from DataSetLoader.MDataSet import BlurDataSet
-from Net import Net, Net_Bn
+# from Net import Net, Net_Bn
+from models import Net
 from loss import HybridLoss
 from torch.utils.data import DataLoader
 from torch import optim
@@ -103,58 +104,18 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
 
 def optimizer_by_layer(net, encoder_lr, decoder_lr_scale):
     params = [
-        {"params": net.conv_1_1.parameters(), "lr": encoder_lr},
-        {"params": net.conv_1_2.parameters(), "lr": encoder_lr},
-        {"params": net.conv_1_mp.parameters(), "lr": encoder_lr},
-        {"params": net.conv_2_1.parameters(), "lr": encoder_lr},
-        {"params": net.conv_2_2.parameters(), "lr": encoder_lr},
-        {"params": net.conv_2_mp.parameters(), "lr": encoder_lr},
-        {"params": net.conv_3_1.parameters(), "lr": encoder_lr},
-        {"params": net.conv_3_2.parameters(), "lr": encoder_lr},
-        {"params": net.conv_3_3.parameters(), "lr": encoder_lr},
-        {"params": net.conv_3_4.parameters(), "lr": encoder_lr},
-        {"params": net.conv_3_mp.parameters(), "lr": encoder_lr},
-        {"params": net.conv_4_1.parameters(), "lr": encoder_lr},
-        {"params": net.conv_4_2.parameters(), "lr": encoder_lr},
-        {"params": net.conv_4_3.parameters(), "lr": encoder_lr},
-        {"params": net.conv_4_4.parameters(), "lr": encoder_lr},
-        {"params": net.conv_4_mp.parameters(), "lr": encoder_lr},
-        {"params": net.conv_5_1.parameters(), "lr": encoder_lr},
-        {"params": net.conv_5_2.parameters(), "lr": encoder_lr},
-        {"params": net.conv_5_3.parameters(), "lr": encoder_lr},
-        {"params": net.conv_5_4.parameters(), "lr": encoder_lr},
-        {"params": net.deconv_1_1.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_1_2.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_1_3.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_1_4.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_2_1.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_2_2.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_2_3.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_2_4.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_3_1.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_3_2.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_3_3.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_3_4.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_4_1.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_4_2.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.deconv_4_3.parameters(), "lr": encoder_lr * decoder_lr_scale},
+        {"params": net.encoder.parameters(), "lr": encoder_lr},
+        {"params": net.decoder.parameters(), "lr": encoder_lr * decoder_lr_scale},
         {"params": net.skip_1.parameters(), "lr": encoder_lr},
         {"params": net.skip_2.parameters(), "lr": encoder_lr},
         {"params": net.skip_3.parameters(), "lr": encoder_lr},
-        {"params": net.skip_4.parameters(), "lr": encoder_lr},
-        {"params": net.out_layer_1.parameters(), "lr": encoder_lr},
-        {"params": net.out_layer_2.parameters(), "lr": encoder_lr},
-        {"params": net.out_layer_3.parameters(), "lr": encoder_lr},
-        {"params": net.out_layer_4.parameters(), "lr": encoder_lr},
+        {"params": net.skip_4.parameters(), "lr": encoder_lr}
     ]
     return optim.Adam(params=params, lr=encoder_lr)
 
 
 if __name__ == '__main__':
-    if Configs["bn"]:
-        model = Net_Bn()
-    else:
-        model = Net()
+    model = Net(Configs)
 
     model = torch.nn.DataParallel(model, device_ids=Configs["device_ids"])
     model = model.cuda(device=Configs["device_ids"][0])

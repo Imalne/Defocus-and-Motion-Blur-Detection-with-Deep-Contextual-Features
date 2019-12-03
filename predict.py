@@ -1,4 +1,4 @@
-from Net import Net
+from Net import Net,Net_Bn
 import torch
 import numpy as np
 import cv2
@@ -11,9 +11,12 @@ import argparse
 
 
 class Predictor:
-    def __init__(self, weight_path):
+    def __init__(self, weight_path, has_BN=False):
         assert weight_path != ""
-        net = Net()
+        if not has_BN:
+            net = Net()
+        else:
+            net = Net_Bn()
         params = torch.load(weight_path)
         state_dict = params['model_state_dict']
         net.load_state_dict(state_dict)
@@ -52,10 +55,13 @@ class Predictor:
             tar_paths = glob(os.path.join(tar_path, "*"))
             assert len(img_paths) == len(tar_paths)
 
+            img_paths.sort()
+            tar_paths.sort()
             bar = tqdm.tqdm(zip(img_paths, tar_paths), total=len(img_paths))
 
             try:
                 for img, tar in bar:
+                    print(img,tar)
                     view, output, target = self.predict(img, tar, merge_img=merge_img)
 
                     cv2.imwrite(os.path.join(out_dir, 'view', os.path.basename(tar)), view)
@@ -81,12 +87,13 @@ class Predictor:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-w", "--w_path", type=str, required=True)
+    parser.add_argument("-b", "--bn", type=bool, default=False)
     parser.add_argument("-i", "--img_dir", type=str, required=True)
     parser.add_argument("-o", "--out_dir", type=str, default="./submit")
     parser.add_argument("-t", "--tar_dir", type=str, required=False)
     parser.add_argument("-m", "--merge_img", type=bool, default=False)
     args = parser.parse_args()
-    predictor = Predictor(args.w_path)
+    predictor = Predictor(args.w_path,args.bn)
     predictor.predict_dir(args.img_dir,
                           args.tar_dir,
                           out_dir=args.out_dir,
