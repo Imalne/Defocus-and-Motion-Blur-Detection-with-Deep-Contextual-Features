@@ -83,7 +83,7 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
         output = net(input_image)
         total_loss, ce_loss, ssim_loss, iou_loss = loss_function(output, target)
         total_loss.backward()
-        # opt.step()
+        opt.step()
 
         if batch_id % 10 == 0:
             valid_loss = valid(net, valid_loader,
