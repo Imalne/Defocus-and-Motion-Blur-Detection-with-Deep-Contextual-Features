@@ -10,5 +10,5 @@ import os
 
 if __name__ == '__main__':
     n = Net_Bn()
-    n.load_model(Configs["vgg_19_pre_path"],Configs["model_save_path"])
+    n.load_model(Configs["pre_path"],Configs["model_save_path"])
     exit(0)

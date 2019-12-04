@@ -1,7 +1,6 @@
 from DataSetLoader.MDataSet import BlurDataSet
-# from Net import Net, Net_Bn
-from models import Net
-from loss import HybridLoss
+from models.deblurnet import Net
+from loss.hybridloss import HybridLoss
 from torch.utils.data import DataLoader
 from torch import optim
 import torch
@@ -106,16 +105,7 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
             ))
 
 
-def optimizer_by_layer(net, encoder_lr, decoder_lr_scale):
-    params = [
-        {"params": net.encoder.parameters(), "lr": encoder_lr},
-        {"params": net.decoder.parameters(), "lr": encoder_lr * decoder_lr_scale},
-        {"params": net.skip_1.parameters(), "lr": encoder_lr},
-        {"params": net.skip_2.parameters(), "lr": encoder_lr},
-        {"params": net.skip_3.parameters(), "lr": encoder_lr},
-        {"params": net.skip_4.parameters(), "lr": encoder_lr}
-    ]
-    return optim.Adam(params=params, lr=encoder_lr)
+
 
 
 if __name__ == '__main__':
@@ -123,8 +113,8 @@ if __name__ == '__main__':
 
     model = torch.nn.DataParallel(model, device_ids=Configs["device_ids"])
     model = model.cuda(device=Configs["device_ids"][0])
-    cur_epoch = model.module.load_model(Configs['vgg_19_pre_path'], Configs['model_save_path'])
-    optimizer = optimizer_by_layer(model.module, Configs['encoder_learning_rate'], Configs['decoder_lr_scale'])
+    cur_epoch = model.module.load_model(Configs['pre_path'], Configs['model_save_path'])
+    optimizer = model.module.optimizer_by_layer(Configs['encoder_learning_rate'], Configs['decoder_lr_scale'])
 
     train_data = BlurDataSet(Configs['train_image_dir'], Configs['train_mask_dir'], aug=Configs['augmentation'])
     train_loader = DataLoader(train_data, batch_size=Configs['train_batch_size'] * len(Configs['device_ids']),

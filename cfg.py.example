@@ -9,7 +9,7 @@ Configs = {
     "test_batch_size": 1,
     "epoch": 1000,
     "model_save_path": "",
-    "vgg_19_pre_path": "",
+    "pre_path": "",
     'checkpoint_dir': "",
     "cross_entropy_weights": [],
     "device_ids": [0],
