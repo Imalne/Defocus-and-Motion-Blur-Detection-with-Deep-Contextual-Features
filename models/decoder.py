@@ -53,4 +53,5 @@ class Decoder(torch.nn.Module):
         x = self.deconv_4_2(x)
         x = self.deconv_4_3(x)
         out_1 = self.out_layer_1(x)
-        return F.softmax(out_1, dim=1), F.softmax(out_2, dim=1), F.softmax(out_3, dim=1), F.softmax(out_4, dim=1)
+        # return F.softmax(out_1, dim=1), F.softmax(out_2, dim=1), F.softmax(out_3, dim=1), F.softmax(out_4, dim=1)
+        return out_1, out_2, out_3, out_4
