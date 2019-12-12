@@ -5,12 +5,12 @@ from models.resnet import ResNet152, ResNet34, ResNet50
 import torch.optim as optim
 import os
 
-layer_channels={
-    "vgg19":[512, 256, 128, 64],
-    "vgg19_bn":[512, 256, 128, 64],
-    "resnet34":[512, 256, 128, 64],
-    "resnet152":[2048, 1024, 512, 256],
-    "resnet50":[2048, 1024, 512, 256],
+layer_channels = {
+    "vgg19": [512, 256, 128, 64],
+    "vgg19_bn": [512, 256, 128, 64],
+    "resnet34": [512, 256, 128, 64],
+    "resnet152": [2048, 1024, 512, 256],
+    "resnet50": [2048, 1024, 512, 256],
 }
 
 

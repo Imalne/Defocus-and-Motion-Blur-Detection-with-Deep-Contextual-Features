@@ -97,6 +97,7 @@ from torchvision.models import resnet152, resnet34, resnet50, resnet101
 # def ResNet152():
 #     return ResNet([3, 8, 36, 3])
 
+
 def conv3x3(in_planes, out_planes, stride=1):
     "3x3 convolution with padding"
     return torch.nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
@@ -162,13 +163,6 @@ class ResNet152(torch.nn.Module):
         self.resb5_1 = BasicBlock(2048, 2048)
         self.resb5_2 = BasicBlock(2048, 2048)
         self.resb5_3 = BasicBlock(2048, 2048)  # 14
-        #
-        # self.pool5 = nn.MaxPool2d(2, 2, ceil_mode=True)
-        #
-        # # stage 6
-        # self.resb6_1 = BasicBlock(512, 512)
-        # self.resb6_2 = BasicBlock(512, 512)
-        # self.resb6_3 = BasicBlock(512, 512)  # 7
 
     def forward(self, x):
         x = self.inconv(x)
@@ -207,13 +201,6 @@ class ResNet50(torch.nn.Module):
         self.resb5_1 = BasicBlock(2048, 2048)
         self.resb5_2 = BasicBlock(2048, 2048)
         self.resb5_3 = BasicBlock(2048, 2048)  # 14
-        #
-        # self.pool5 = nn.MaxPool2d(2, 2, ceil_mode=True)
-        #
-        # # stage 6
-        # self.resb6_1 = BasicBlock(512, 512)
-        # self.resb6_2 = BasicBlock(512, 512)
-        # self.resb6_3 = BasicBlock(512, 512)  # 7
 
     def forward(self, x):
         x = self.inconv(x)
@@ -252,13 +239,6 @@ class ResNet34(torch.nn.Module):
         self.resb5_1 = BasicBlock(512, 512)
         self.resb5_2 = BasicBlock(512, 512)
         self.resb5_3 = BasicBlock(512, 512)  # 14
-        #
-        # self.pool5 = nn.MaxPool2d(2, 2, ceil_mode=True)
-        #
-        # # stage 6
-        # self.resb6_1 = BasicBlock(512, 512)
-        # self.resb6_2 = BasicBlock(512, 512)
-        # self.resb6_3 = BasicBlock(512, 512)  # 7
 
     def forward(self, x):
         x = self.inconv(x)

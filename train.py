@@ -1,5 +1,6 @@
 from DataSetLoader.MDataSet import BlurDataSet
 from models.deblurnet import Net
+from models.fpn import FPN
 from loss.hybridloss import HybridLoss
 from torch.utils.data import DataLoader
 from torch import optim
@@ -43,19 +44,19 @@ def valid(net, loader, loss_function, ech, summary, epoch_test=False):
             pre_mask1 = torch.argmax(pre_mask1, dim=0).unsqueeze(0)
             pre_mask2 = output[1].cpu()[0]
             pre_mask2 = torch.argmax(pre_mask2, dim=0).unsqueeze(0)
-            pre_mask3 = output[2].cpu()[0]
-            pre_mask3 = torch.argmax(pre_mask3, dim=0).unsqueeze(0)
-            pre_mask4 = output[3].cpu()[0]
-            pre_mask4 = torch.argmax(pre_mask4, dim=0).unsqueeze(0)
+            # pre_mask3 = output[2].cpu()[0]
+            # pre_mask3 = torch.argmax(pre_mask3, dim=0).unsqueeze(0)
+            # pre_mask4 = output[3].cpu()[0]
+            # pre_mask4 = torch.argmax(pre_mask4, dim=0).unsqueeze(0)
             summary.add_image("scalar/validate_sample_image", image, global_step=ech)
             summary.add_image("gt/validate_sample_gt1", gt1.unsqueeze(0), global_step=ech)
             summary.add_image("gt/validate_sample_gt2", gt2.unsqueeze(0), global_step=ech)
-            summary.add_image("gt/validate_sample_gt3", gt3.unsqueeze(0), global_step=ech)
-            summary.add_image("gt/validate_sample_gt4", gt4.unsqueeze(0), global_step=ech)
+            # summary.add_image("gt/validate_sample_gt3", gt3.unsqueeze(0), global_step=ech)
+            # summary.add_image("gt/validate_sample_gt4", gt4.unsqueeze(0), global_step=ech)
             summary.add_image("pre/validate_sample_pre1", pre_mask1, global_step=ech)
             summary.add_image("pre/validate_sample_pre2", pre_mask2, global_step=ech)
-            summary.add_image("pre/validate_sample_pre3", pre_mask3, global_step=ech)
-            summary.add_image("pre/validate_sample_pre4", pre_mask4, global_step=ech)
+            # summary.add_image("pre/validate_sample_pre3", pre_mask3, global_step=ech)
+            # summary.add_image("pre/validate_sample_pre4", pre_mask4, global_step=ech)
             return valid_loss.cpu().detach().numpy()
             break
     summary.add_scalar("validate/total_loss", np.mean(v_loss), global_step=ech)
@@ -85,7 +86,7 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
         total_loss.backward()
         opt.step()
 
-        if batch_id % 10 == 0:
+        if batch_id % 1 == 0:
             valid_loss = valid(net, valid_loader,
                                loss_function,
                                ech * len(train_loader.dataset) + batch_id * train_loader.batch_size, summary)
@@ -116,13 +117,14 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
 
 
 if __name__ == '__main__':
-    model = Net(Configs)
+    model = FPN.fromConfig(Configs)
 
     model = torch.nn.DataParallel(model, device_ids=Configs["device_ids"])
     model = model.cuda(device=Configs["device_ids"][0])
-    cur_epoch = model.module.load_model(Configs['pre_path'], Configs['model_save_path'])
-    optimizer = model.module.optimizer_by_layer(Configs['encoder_learning_rate'], Configs['decoder_lr_scale'])
-
+    # cur_epoch = model.module.load_model(Configs['pre_path'], Configs['model_save_path'])
+    # optimizer = model.module.optimizer_by_layer(Configs['encoder_learning_rate'], Configs['decoder_lr_scale'])
+    optimizer = optim.Adam(model.module.parameters(),lr = Configs['encoder_learning_rate'])
+    cur_epoch=0
     train_data = BlurDataSet(Configs['train_image_dir'], Configs['train_mask_dir'], aug=Configs['augmentation'])
     train_loader = DataLoader(train_data, batch_size=Configs['train_batch_size'] * len(Configs['device_ids']),
                               shuffle=True, num_workers=len(Configs['device_ids']))
