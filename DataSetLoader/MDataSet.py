@@ -7,6 +7,17 @@ import numpy as np
 import cv2
 import torch
 from cfg import Configs
+import albumentations as albu
+
+
+def get_transforms(size: int):
+    pipeline = albu.Compose([albu.RandomCrop(size, size, always_apply=True),albu.VerticalFlip(),albu.RandomRotate90(always_apply=True)], additional_targets={'target': 'image'})
+
+    def process(a, b):
+        r = pipeline(image=a, target=b)
+        return r['image'], r['target']
+
+    return process
 
 
 class BlurDataSet(Dataset):
@@ -35,54 +46,30 @@ class BlurDataSet(Dataset):
         self.data_name_list.sort()
         self.target_name_list.sort()
         self.size = data_len
-
-        self.aug_transforms = []
-        self.aug_transforms.append(transforms.Compose([SyncRandomCrop((256,256)), transforms.RandomHorizontalFlip(1), transforms.RandomRotation((90,90))]))
-        self.aug_transforms.append(transforms.Compose([SyncRandomCrop((256,256)), transforms.RandomHorizontalFlip(1), transforms.RandomRotation((180,180))]))
-        self.aug_transforms.append(transforms.Compose([SyncRandomCrop((256,256)), transforms.RandomHorizontalFlip(1), transforms.RandomRotation((270,270))]))
-
-        self.input_transform = transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor()])
-        
-        self.target_transforms = []
-        self.target_transforms.append(transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor()]))
-        self.target_transforms.append(transforms.Compose([transforms.Resize((112, 112)), transforms.ToTensor()]))
-        self.target_transforms.append(transforms.Compose([transforms.Resize((56, 56)), transforms.ToTensor()]))
-        self.target_transforms.append(transforms.Compose([transforms.Resize((28, 28)), transforms.ToTensor()]))
+        self.transform = get_transforms(224)
+        self.multi_scale_transform = [albu.Resize(224, 224),albu.Resize(112, 112)]
 
     def __getitem__(self, item):
-        origin_image = Image.open(self.data_name_list[item], "r")
-        target_image = Image.open(self.target_name_list[item], 'r')
-        
-        inputs=[]
-        targets=[]
-
-        inputs.append(self.input_transform(origin_image))
-        target_images = []
-        for tran in self.target_transforms:
-            target_images.append((tran(target_image) * 255).long().squeeze())
-        targets.append(target_images)
+        image = np.array(Image.open(self.data_name_list[item],'r'))
+        target = np.array(Image.open(self.target_name_list[item],'r'))
 
         if self.aug:
-            augs_inputs = []
-            augs_targets = []
-            for aug_trans in self.aug_transforms:
-                augs_inputs.append(aug_trans(origin_image))
-                aug_trans.transforms[0].rand_fix()
-                augs_targets.append(aug_trans(target_image))
-                aug_trans.transforms[0].rand_active()
+            check_time = 5
+            for i in range(check_time):
+                image_t,target_t = self.transform(image,target)
+                if np.max(target_t) != np.min(target_t) or i == check_time - 1:
+                    image = image_t
+                    target = target_t
+                    break
+        image = torch.from_numpy(np.transpose(image, (2, 0, 1))).float()/255
 
-            for i in range(len(augs_inputs)):
-                inputs.append(self.input_transform(augs_inputs[i]))
-                target_images = []
-                for tran in self.target_transforms:
-                    target_images.append((tran(augs_targets[i]) * 255).long().squeeze())
-                targets.append(target_images)
+        targets = []
+        for tran in self.multi_scale_transform:
+            resize = tran(image=target)['image']
+            resize = torch.from_numpy(resize).long()
+            targets.append(resize)
 
-        return inputs, targets
+        return image, targets
 
     def __len__(self):
         return self.size

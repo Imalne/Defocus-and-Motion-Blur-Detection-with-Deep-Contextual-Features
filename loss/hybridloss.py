@@ -16,7 +16,7 @@ class HybridLoss(torch.nn.Module):
 
     def forward(self, output, target):
         ce_loss = self.ce(output, target)
-        onehot_target = [torch.zeros(output[i].shape).cuda(output[i].get_device()).scatter_(1, target[i].unsqueeze(1), 1) for i in range(len(output))]
+        onehot_target = [torch.zeros(output[i].shape).cuda(output[i].get_device()).scatter_(1, target[i].unsqueeze(1), 1) for i in range(len(target))]
         output_prob = [F.softmax(i, dim=1) for i in output]
         iou_loss = self.iou_loss(output_prob, onehot_target)
         ssim_loss = self.ssim_loss(output_prob[0], onehot_target[0])

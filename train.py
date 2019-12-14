@@ -17,15 +17,8 @@ def valid(net, loader, loss_function, ech, summary, epoch_test=False):
     s_loss = []
     i_loss = []
     for batch_id, data in enumerate(loader):
-        input_image = torch.cat(data[0], 0).cuda(device=Configs["device_ids"][0])
-        image = data[0][0][0]
-        target = []
-
-        for i in range(4):
-            cur = []
-            for t in data[1]:
-                cur.append(t[i])
-            target.append(torch.cat(cur, 0).cuda(device=Configs["device_ids"][0]))
+        input_image = data[0].cuda(device=Configs["device_ids"][0])
+        target = [i.cuda(device=Configs["device_ids"][0]) for i in data[1]]
 
         output = net(input_image)
 
@@ -36,10 +29,10 @@ def valid(net, loader, loss_function, ech, summary, epoch_test=False):
         i_loss.append(iou_loss.cpu().detach().numpy())
 
         if not epoch_test:
-            gt1 = data[1][0][0][0]
-            gt2 = data[1][0][1][0]
-            gt3 = data[1][0][2][0]
-            gt4 = data[1][0][3][0]
+            gt1 = data[1][0][0]
+            gt2 = data[1][0][0]
+            # gt3 = data[1][0][2][0]
+            # gt4 = data[1][0][3][0]
             pre_mask1 = output[0].cpu()[0]
             pre_mask1 = torch.argmax(pre_mask1, dim=0).unsqueeze(0)
             pre_mask2 = output[1].cpu()[0]
@@ -48,7 +41,7 @@ def valid(net, loader, loss_function, ech, summary, epoch_test=False):
             # pre_mask3 = torch.argmax(pre_mask3, dim=0).unsqueeze(0)
             # pre_mask4 = output[3].cpu()[0]
             # pre_mask4 = torch.argmax(pre_mask4, dim=0).unsqueeze(0)
-            summary.add_image("scalar/validate_sample_image", image, global_step=ech)
+            summary.add_image("scalar/validate_sample_image", input_image[0], global_step=ech)
             summary.add_image("gt/validate_sample_gt1", gt1.unsqueeze(0), global_step=ech)
             summary.add_image("gt/validate_sample_gt2", gt2.unsqueeze(0), global_step=ech)
             # summary.add_image("gt/validate_sample_gt3", gt3.unsqueeze(0), global_step=ech)
@@ -72,13 +65,8 @@ def valid(net, loader, loss_function, ech, summary, epoch_test=False):
 def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
     net.train()
     for batch_id, data in enumerate(train_loader):
-        input_image = torch.cat(data[0], 0).cuda(device=Configs["device_ids"][0])
-        target = []
-        for i in range(4):
-            cur = []
-            for t in data[1]:
-                cur.append(t[i])
-            target.append(torch.cat(cur, 0).cuda(device=Configs["device_ids"][0]))
+        input_image = data[0].cuda(device=Configs["device_ids"][0])
+        target = [i.cuda(device=Configs["device_ids"][0]) for i in data[1]]
 
         opt.zero_grad()
         output = net(input_image)
@@ -86,7 +74,7 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
         total_loss.backward()
         opt.step()
 
-        if batch_id % 1 == 0:
+        if batch_id % 20 == 0:
             valid_loss = valid(net, valid_loader,
                                loss_function,
                                ech * len(train_loader.dataset) + batch_id * train_loader.batch_size, summary)
@@ -118,6 +106,7 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
 
 if __name__ == '__main__':
     model = FPN.fromConfig(Configs)
+    # model = Net(Configs)
 
     model = torch.nn.DataParallel(model, device_ids=Configs["device_ids"])
     model = model.cuda(device=Configs["device_ids"][0])
@@ -127,10 +116,10 @@ if __name__ == '__main__':
     cur_epoch=0
     train_data = BlurDataSet(Configs['train_image_dir'], Configs['train_mask_dir'], aug=Configs['augmentation'])
     train_loader = DataLoader(train_data, batch_size=Configs['train_batch_size'] * len(Configs['device_ids']),
-                              shuffle=True, num_workers=len(Configs['device_ids']))
-    test_data = BlurDataSet(Configs['test_image_dir'], Configs['test_mask_dir'], False)
+                              shuffle=True)
+    test_data = BlurDataSet(Configs['test_image_dir'], Configs['test_mask_dir'], True)
     test_loader = DataLoader(test_data, batch_size=Configs['test_batch_size'] * len(Configs['device_ids']),
-                             shuffle=True, num_workers=len(Configs['device_ids']))
+                             shuffle=True)
 
     write = SummaryWriter()
     # write.add_graph(model,torch.rand(1,3,224,224).cuda())

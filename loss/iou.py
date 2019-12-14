@@ -33,7 +33,7 @@ class MultiIOU(torch.nn.Module):
 
 
     def forward(self, output, target):
-        level_num = len(output)
+        level_num = min(len(output),len(target))
         total_loss = 0
         for i in range(level_num):
             level_loss = _iou(output[i], target[i],self.size_average)/(4 ** (level_num - 1 - i))

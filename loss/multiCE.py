@@ -8,7 +8,7 @@ class MultiCrossEntropyLoss(torch.nn.Module):
         super(MultiCrossEntropyLoss, self).__init__()
 
     def forward(self, output, target):
-        level_num = len(output)
+        level_num = min(len(output),len(target))
         total_loss = 0
         for i in range(level_num):
             level_loss = F.cross_entropy(output[i], target[i],
