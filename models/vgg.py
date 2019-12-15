@@ -14,9 +14,9 @@ class VGG19(torch.nn.Module):
 
     def forward(self,x):
         skip_1 = self.encoder_1(x)
-        skip_2 = self.encoder_1(skip_1)
-        skip_3 = self.encoder_1(skip_2)
-        skip_4 = self.encoder_1(skip_3)
+        skip_2 = self.encoder_2(skip_1)
+        skip_3 = self.encoder_3(skip_2)
+        skip_4 = self.encoder_4(skip_3)
         x = self.encoder_5(skip_4)
         return skip_1, skip_2, skip_3, skip_4, x
 
@@ -34,8 +34,8 @@ class VGG19_bn(torch.nn.Module):
 
     def forward(self,x):
         skip_1 = self.encoder_1(x)
-        skip_2 = self.encoder_1(skip_1)
-        skip_3 = self.encoder_1(skip_2)
-        skip_4 = self.encoder_1(skip_3)
+        skip_2 = self.encoder_2(skip_1)
+        skip_3 = self.encoder_3(skip_2)
+        skip_4 = self.encoder_4(skip_3)
         x = self.encoder_5(skip_4)
         return skip_1, skip_2, skip_3, skip_4, x
