@@ -121,8 +121,8 @@ def save_model(self, ech, save_path):
 
 
 if __name__ == '__main__':
-    # model = FPN.fromConfig(Configs)
-    model = Net(Configs)
+    model = FPN.fromConfig(Configs)
+    # model = Net(Configs)
 
     model = torch.nn.DataParallel(model, device_ids=Configs["device_ids"])
     model = model.cuda(device=Configs["device_ids"][0])
