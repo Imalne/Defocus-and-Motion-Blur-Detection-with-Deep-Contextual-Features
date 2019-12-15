@@ -145,6 +145,6 @@ if __name__ == '__main__':
     for epoch in range(cur_epoch, Configs['epoch']):
         train(model, train_loader, test_loader, loss_func, optimizer, epoch, write)
         valid(model,test_loader,loss_func,epoch,write,True)
-        save_model(epoch, Configs['model_save_path'])
+        save_model(model, epoch, Configs['model_save_path'])
     write.close()
     exit(0)
