@@ -55,8 +55,3 @@ class FPN(torch.nn.Module):
         encoder = get_encoder(config)
         return FPN(encoder,get_fpn_skip(config),config['skip_out_channel'])
 
-    def save_model(self, ech, save_path):
-        torch.save({
-            'epoch': ech,
-            'model_state_dict': self.state_dict(),
-        }, save_path)
