@@ -53,5 +53,8 @@ class FPN(torch.nn.Module):
     @classmethod
     def fromConfig(cls,config):
         encoder = get_encoder(config)
-        return FPN(encoder,get_fpn_skip(config),config['skip_out_channel'])
+        fpn =  FPN(encoder,get_fpn_skip(config),config['skip_out_channel'])
+        for param in fpn.parameters():
+            param.requires_grad = True
+        return fpn
 
