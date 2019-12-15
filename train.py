@@ -112,10 +112,10 @@ def load_module(model,save_path):
         print("start from new")
         return 0
 
-def save_model(self, ech, save_path):
+def save_model(model, ech, save_path):
     torch.save({
         'epoch': ech,
-        'model_state_dict': self.state_dict(),
+        'model_state_dict': model.state_dict(),
     }, save_path)
 
 
@@ -145,6 +145,6 @@ if __name__ == '__main__':
     for epoch in range(cur_epoch, Configs['epoch']):
         train(model, train_loader, test_loader, loss_func, optimizer, epoch, write)
         valid(model,test_loader,loss_func,epoch,write,True)
-        model.module.save_model(epoch, Configs['model_save_path'])
+        save_model(epoch, Configs['model_save_path'])
     write.close()
     exit(0)
