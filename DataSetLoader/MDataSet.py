@@ -10,8 +10,10 @@ from cfg import Configs
 import albumentations as albu
 
 
-def get_transforms(size: int):
-    pipeline = albu.Compose([albu.RandomCrop(size, size, always_apply=True),albu.VerticalFlip(),albu.RandomRotate90(always_apply=True)], additional_targets={'target': 'image'})
+def get_transforms(crop_size: int, size: int):
+    pipeline = albu.Compose([albu.RandomCrop(crop_size, crop_size, always_apply=True), albu.Resize(size, size),
+                             albu.VerticalFlip(), albu.RandomRotate90(always_apply=True)],
+                            additional_targets={'target': 'image'})
 
     def process(a, b):
         r = pipeline(image=a, target=b)
@@ -46,8 +48,8 @@ class BlurDataSet(Dataset):
         self.data_name_list.sort()
         self.target_name_list.sort()
         self.size = data_len
-        self.transform = get_transforms(224)
-        self.multi_scale_transform = [albu.Resize(224, 224),albu.Resize(112, 112)]
+        self.transform = get_transforms(256, 224)
+        self.multi_scale_transform = [albu.Resize(224, 224), albu.Resize(112, 112)]
 
     def __getitem__(self, item):
         image = np.array(Image.open(self.data_name_list[item],'r'))
