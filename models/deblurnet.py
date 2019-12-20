@@ -4,6 +4,7 @@ from models.vgg import VGG19_bn, VGG19
 from models.resnet import ResNet152, ResNet34, ResNet50
 import torch.optim as optim
 import os
+from utils import get_encoder
 
 layer_channels = {
     "vgg19": [512, 256, 128, 64],
@@ -19,7 +20,7 @@ class Net(torch.nn.Module):
         super(Net,self).__init__()
         self.encoder_type = config["encoder_type"]
         self.decoder = Decoder(layer_channels[self.encoder_type])
-        self.get_encoder()
+        self.encoder = self.get_encoder(self.encoder_type)
         self.get_skip_layer()
 
 
@@ -77,20 +78,6 @@ class Net(torch.nn.Module):
         elif self.encoder_type == "resnet152":
             return target_dict
 
-
-    def get_encoder(self):
-        if self.encoder_type == "vgg19":
-            self.encoder = VGG19()
-        elif self.encoder_type == "vgg19_bn":
-            self.encoder = VGG19_bn()
-        elif self.encoder_type == "resnet152":
-            self.encoder = ResNet152()
-        elif self.encoder_type == "resnet34":
-            self.encoder = ResNet34()
-        elif self.encoder_type == "resnet50":
-            self.encoder = ResNet50()
-        else:
-            raise RuntimeError("invalid encoder type")
 
     def get_skip_layer(self):
         channel = layer_channels[self.encoder_type]

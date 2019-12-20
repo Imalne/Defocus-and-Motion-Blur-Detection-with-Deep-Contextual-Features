@@ -1,4 +1,5 @@
-from Net import Net,Net_Bn
+from models.deblurnet import Net
+from models.fpn import FPN
 import torch
 import numpy as np
 import cv2
@@ -8,15 +9,18 @@ from PIL import Image
 import os
 import tqdm
 import argparse
+from cfg import Configs
+from torch.nn import DataParallel
 
 
 class Predictor:
-    def __init__(self, weight_path, has_BN=False):
+    def __init__(self, weight_path, config):
         assert weight_path != ""
-        if not has_BN:
-            net = Net()
+        if config["fpn"]:
+            net = FPN.fromConfig(config)
         else:
-            net = Net_Bn()
+            net = Net(config)
+        net = DataParallel(net)
         params = torch.load(weight_path)
         state_dict = params['model_state_dict']
         net.load_state_dict(state_dict)
@@ -51,6 +55,10 @@ class Predictor:
 
     def predict_dir(self, img_path, tar_path=None, out_dir="./submit2", merge_img=False):
         img_paths = glob(os.path.join(img_path, "*"))
+
+        os.makedirs(os.path.join(out_dir, 'view'),exist_ok=True)
+        os.makedirs(os.path.join(out_dir, 'gt'),exist_ok=True)
+        os.makedirs(os.path.join(out_dir, 'predict'),exist_ok=True)
         if tar_path:
             tar_paths = glob(os.path.join(tar_path, "*"))
             assert len(img_paths) == len(tar_paths)
@@ -86,16 +94,13 @@ class Predictor:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-w", "--w_path", type=str, required=True)
-    parser.add_argument("-b", "--bn", type=bool, default=False)
-    parser.add_argument("-i", "--img_dir", type=str, required=True)
     parser.add_argument("-o", "--out_dir", type=str, default="./submit")
-    parser.add_argument("-t", "--tar_dir", type=str, required=False)
-    parser.add_argument("-m", "--merge_img", type=bool, default=False)
+    parser.add_argument("-m", "--merge_img", type=bool, default=True)
+    parser.add_argument("-w", "--weight_path", type=str, default=Configs["model_save_path"])
     args = parser.parse_args()
-    predictor = Predictor(args.w_path,args.bn)
-    predictor.predict_dir(args.img_dir,
-                          args.tar_dir,
+    predictor = Predictor(args.weight_path, Configs)
+    predictor.predict_dir(Configs["test_image_dir"],
+                          Configs["test_mask_dir"],
                           out_dir=args.out_dir,
                           merge_img=args.merge_img)
     # predictor = Predictor("mnet.pth")

@@ -11,6 +11,8 @@ from tensorboardX import SummaryWriter
 import numpy as np
 
 
+min_valid_loss = 100
+
 def valid(net, loader, loss_function, ech, summary, epoch_test=False):
     v_loss = []
     c_loss = []
@@ -57,6 +59,14 @@ def valid(net, loader, loss_function, ech, summary, epoch_test=False):
     summary.add_scalar("validate/ssim_loss", np.mean(s_loss), global_step=ech)
     summary.add_scalar("validate/iou_loss", np.mean(i_loss), global_step=ech)
 
+    print("validate......")
+    if min_valid_loss > np.mean(v_loss):
+        min_valid_loss = np.mean(v_loss)
+        torch.save({
+            'model_state_dict': model.state_dict(),
+        }, "best.pth")
+
+    print("loss:",np.mean(v_loss))
     return np.mean(v_loss)
 
 
