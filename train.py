@@ -84,7 +84,7 @@ def train(net, train_loader, valid_loader, loss_function, opt, ech, summary):
         total_loss.backward()
         opt.step()
 
-        if batch_id % 20 == 0:
+        if batch_id % 10 == 0:
             valid_loss = valid(net, valid_loader,
                                loss_function,
                                ech * len(train_loader.dataset) + batch_id * train_loader.batch_size, summary)
