@@ -60,6 +60,7 @@ def valid(net, loader, loss_function, ech, summary, epoch_test=False):
     summary.add_scalar("validate/iou_loss", np.mean(i_loss), global_step=ech)
 
     print("validate......")
+    global min_valid_loss
     if min_valid_loss > np.mean(v_loss):
         min_valid_loss = np.mean(v_loss)
         torch.save({
