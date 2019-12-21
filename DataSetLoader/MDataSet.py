@@ -54,6 +54,8 @@ class BlurDataSet(Dataset):
     def __getitem__(self, item):
         image = np.array(Image.open(self.data_name_list[item],'r'))
         target = np.array(Image.open(self.target_name_list[item],'r'))
+        if len(target.shape) > 2:
+            target = target[:,:,0]
 
         if self.aug:
             check_time = 5
