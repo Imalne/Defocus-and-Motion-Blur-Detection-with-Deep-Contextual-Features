@@ -11,8 +11,6 @@ class MultiCrossEntropyLoss(torch.nn.Module):
         level_num = min(len(output),len(target))
         total_loss = 0
         for i in range(level_num):
-            print(target[i].shape)
-            exit(0)
             level_loss = F.cross_entropy(output[i], target[i],
                                  weight=torch.FloatTensor(Configs["cross_entropy_weights"]).cuda(output[0].get_device()))/ (4 ** (level_num -1 - i))
             total_loss += level_loss
