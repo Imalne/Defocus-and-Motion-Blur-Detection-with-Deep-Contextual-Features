@@ -134,7 +134,7 @@ def save_model(model, ech, save_path):
 if __name__ == '__main__':
     if Configs["fpn"]:
         model = FPN.fromConfig(Configs)
-        optimizer = optim.Adam(model.module.parameters(), lr=Configs['encoder_learning_rate'])
+        optimizer = optim.Adam(model.parameters(), lr=Configs['encoder_learning_rate'])
     else:
         model = Net(Configs)
         optimizer = model.optimizer_by_layer(Configs['encoder_learning_rate'], Configs['decoder_lr_scale'])
