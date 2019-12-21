@@ -49,7 +49,7 @@ class BlurDataSet(Dataset):
         self.target_name_list.sort()
         self.size = data_len
         self.transform = get_transforms(256, 224)
-        self.multi_scale_transform = [albu.Resize(224, 224), albu.Resize(112, 112)]
+        self.multi_scale_transform = [albu.Resize(224, 224), albu.Resize(112, 112), albu.Resize(56, 56), albu.Resize(28, 28)]
 
     def __getitem__(self, item):
         image = np.array(Image.open(self.data_name_list[item],'r'))

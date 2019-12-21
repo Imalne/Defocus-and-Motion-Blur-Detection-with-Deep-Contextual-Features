@@ -18,5 +18,6 @@ Configs = {
     "l_ssim":1,
     "l_IoU":1,
     "encoder_type": "vgg19",
-    "skip_out_channel":128
+    "skip_out_channel":128,
+    "fpn":True
 }

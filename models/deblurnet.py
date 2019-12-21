@@ -20,7 +20,7 @@ class Net(torch.nn.Module):
         super(Net,self).__init__()
         self.encoder_type = config["encoder_type"]
         self.decoder = Decoder(layer_channels[self.encoder_type])
-        self.encoder = self.get_encoder(self.encoder_type)
+        self.encoder = get_encoder(config)
         self.get_skip_layer()
 
 

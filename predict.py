@@ -11,6 +11,7 @@ import tqdm
 import argparse
 from cfg import Configs
 from torch.nn import DataParallel
+import albumentations as albu
 
 
 class Predictor:
@@ -27,20 +28,34 @@ class Predictor:
         net.eval()
         self.model = net.cuda()
         self.trans = transforms.Compose([
-            transforms.Resize((224, 224)),
             transforms.ToTensor()])
+
+    def paddingIfNeed(self,img):
+        img = np.array(img)
+        height, width, _ = img.shape
+        padded_height, padded_width,_ = img.shape
+        if padded_height % 32 != 0:
+            padded_height = (padded_height // 32 + 1) * 32
+        if padded_width % 32 != 0:
+            padded_width = (padded_width // 32 + 1) * 32
+        pad = albu.PadIfNeeded(padded_height,padded_width)
+        crop = albu.CenterCrop(height,width)
+        img = pad(image=img)["image"]
+        return img, crop
 
     def predict(self, inp: str, target: str = None, merge_img=False):
         assert os.path.exists(inp)
 
         img = Image.open(inp, 'r')
-        img_resize = cv2.resize(np.array(img), (224, 224))
-        output, output_view = self.predict_(img)
+        img_resize, crop = self.paddingIfNeed(img)
+        output, output_view = self.predict_(img_resize)
+        img_resize = crop(image=img_resize)["image"]
+        output = crop(image=output)["image"]
+        output_view = crop(image=output_view)["image"]
         if target:
-            tar = Image.open(target, 'r')
-            resize = transforms.Resize((224,224))
-            tar_resize = np.array(resize(tar))[:, :, np.newaxis]
-            tar_resize_view = tar_resize.repeat(3, 2) * 127
+            tar = cv2.imread(target)
+            tar_resize = tar
+            tar_resize_view = tar_resize* 127
             return np.hstack((img_resize, tar_resize_view, output_view)) if merge_img else output_view, output, tar_resize
         else:
             return np.hstack(img_resize, output_view) if merge_img else output_view, output, None
@@ -69,7 +84,7 @@ class Predictor:
 
             try:
                 for img, tar in bar:
-                    print(img,tar)
+                    # print(img,tar)
                     view, output, target = self.predict(img, tar, merge_img=merge_img)
 
                     cv2.imwrite(os.path.join(out_dir, 'view', os.path.basename(tar)), view)
