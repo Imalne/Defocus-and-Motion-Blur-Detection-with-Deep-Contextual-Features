@@ -134,15 +134,18 @@ def save_model(model, ech, save_path):
 if __name__ == '__main__':
     if Configs["fpn"]:
         model = FPN.fromConfig(Configs)
+        optimizer = optim.Adam(model.module.parameters(), lr=Configs['encoder_learning_rate'])
     else:
         model = Net(Configs)
+        optimizer = model.optimizer_by_layer(Configs['encoder_learning_rate'], Configs['decoder_lr_scale'])
+
 
     model = torch.nn.DataParallel(model, device_ids=Configs["device_ids"])
     model = model.cuda(device=Configs["device_ids"][0])
     cur_epoch = load_module(model,Configs['model_save_path'])
     # cur_epoch = model.module.load_model(Configs['pre_path'], Configs['model_save_path'])
     # optimizer = model.module.optimizer_by_layer(Configs['encoder_learning_rate'], Configs['decoder_lr_scale'])
-    optimizer = optim.Adam(model.module.parameters(),lr = Configs['encoder_learning_rate'])
+
 
     train_data = BlurDataSet(Configs['train_image_dir'], Configs['train_mask_dir'], aug=Configs['augmentation'])
     train_loader = DataLoader(train_data, batch_size=Configs['train_batch_size'] * len(Configs['device_ids']),
