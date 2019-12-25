@@ -19,5 +19,6 @@ Configs = {
     "l_IoU":1,
     "encoder_type": "vgg19",
     "skip_out_channel":128,
-    "fpn":True
+    "fpn":True,
+    'fpn_out': 2
 }
