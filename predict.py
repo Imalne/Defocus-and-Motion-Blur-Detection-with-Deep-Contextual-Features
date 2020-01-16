@@ -64,7 +64,8 @@ class Predictor:
         org = np.array(inp)
         inp = self.trans(inp)
         inp = torch.unsqueeze(inp, 0).cuda()
-        output = self.model(inp)[0].cpu().detach().numpy()[0]
+        with torch.no_grad():
+            output = self.model(inp)[0].cpu().detach().numpy()[0]
         output = np.argmax(output, axis=0)[:, :, np.newaxis].repeat(3, 2)
         return output.astype(np.uint8)[:, :, 0], output.astype(np.uint8)*127
 
